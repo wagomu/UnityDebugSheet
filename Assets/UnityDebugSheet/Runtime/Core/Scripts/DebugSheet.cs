@@ -106,6 +106,8 @@ namespace UnityDebugSheet.Runtime.Core.Scripts
 
                 Destroy(gameObject);
             }
+            
+            _drawerController.SetStateWithAnimation(DrawerState.Min);
         }
 
         private void Update()
@@ -124,6 +126,7 @@ namespace UnityDebugSheet.Runtime.Core.Scripts
             SetupMultiClickEventDispatcher();
             _backButton.onClick.AddListener(OnBackButtonClicked);
             _closeButton.onClick.AddListener(OnCloseButtonClicked);
+            _drawerController.OnResizingStateChanged += OnDrawerResizingStateChanged;
         }
 
         private void OnDisable()
@@ -132,6 +135,7 @@ namespace UnityDebugSheet.Runtime.Core.Scripts
             _closeButton.onClick.RemoveListener(OnCloseButtonClicked);
             _flickEvent.flicked.RemoveListener(OnFlicked);
             CleanupMultiClickEventDispatcher();
+            _drawerController.OnResizingStateChanged -= OnDrawerResizingStateChanged;
         }
 
         private void OnDestroy()
@@ -315,6 +319,7 @@ namespace UnityDebugSheet.Runtime.Core.Scripts
 
         public void Show()
         {
+            _drawer.gameObject.SetActive(true);
             _drawerController.SetStateWithAnimation(DrawerState.Max);
         }
 
@@ -401,9 +406,12 @@ namespace UnityDebugSheet.Runtime.Core.Scripts
                 return;
 
             // Apply the flick.
-            var isUp = flick.DeltaInchPosition.y >= 0;
-            var state = isUp ? _drawer.GetUpperState() : _drawer.GetLowerState();
-            _drawerController.SetStateWithAnimation(state);
+            //var isUp = flick.DeltaInchPosition.y >= 0;
+            //var state = isUp ? _drawer.GetUpperState() : _drawer.GetLowerState();
+            
+            _drawer.gameObject.SetActive(true);
+            
+            _drawerController.SetStateWithAnimation(DrawerState.Max);
         }
 
         private void SetupMultiClickEventDispatcher()
@@ -426,8 +434,28 @@ namespace UnityDebugSheet.Runtime.Core.Scripts
             if (_clickToOpen == ClickToOpenMode.Off)
                 return;
 
-            var state = _drawer.GetNearestState() == DrawerState.Max ? DrawerState.Min : DrawerState.Max;
-            _drawerController.SetStateWithAnimation(state);
+            //var state = _drawer.GetNearestState() == DrawerState.Max ? DrawerState.Min : DrawerState.Max;
+            
+            // Drawer非アクティブ時は開く前にアクティブ化
+            _drawer.gameObject.SetActive(true);
+            
+            _drawerController.SetStateWithAnimation(DrawerState.Max);
+        }
+
+        private void OnDrawerResizingStateChanged(UnityDebugSheet.Runtime.Foundation.Drawer.StatefulDrawerController.DrawerResizingState state)
+        {
+            if (state != UnityDebugSheet.Runtime.Foundation.Drawer.StatefulDrawerController.DrawerResizingState.None)
+                return;
+            
+            // アニメーションが完了した後のステートがNoneの時
+            if (Mathf.Approximately(_drawer.Progress, _drawer.MinProgress))
+            {
+                _drawer.gameObject.SetActive(false);
+            }
+            else
+            {
+                _drawer.gameObject.SetActive(true);
+            }
         }
     }
 }
