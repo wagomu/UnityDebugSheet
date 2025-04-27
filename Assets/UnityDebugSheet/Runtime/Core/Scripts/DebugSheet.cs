@@ -107,7 +107,6 @@ namespace UnityDebugSheet.Runtime.Core.Scripts
                 Destroy(gameObject);
             }
             
-            _drawerController.SetStateWithAnimation(DrawerState.Min);
         }
 
         private void Update()

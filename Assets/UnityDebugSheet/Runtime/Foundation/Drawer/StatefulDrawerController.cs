@@ -59,6 +59,8 @@ namespace UnityDebugSheet.Runtime.Foundation.Drawer
             Dpi = dpi;
 
             Assert.IsNotNull(_canvas);
+            
+            SetStateWithAnimation(DrawerState.Min);
         }
 
         void IBeginDragHandler.OnBeginDrag(PointerEventData eventData)
